@@ -11,6 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="30px"
+        android:textStyle="bold"
         android:text="Select wheel"
         android:textAlignment="center"
         android:textSize="30px"/>

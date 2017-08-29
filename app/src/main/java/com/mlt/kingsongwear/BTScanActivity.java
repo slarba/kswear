@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
 import android.support.wearable.view.WatchViewStub;
 import android.util.Log;
 import android.view.View;
@@ -15,7 +14,6 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import no.nordicsemi.android.support.v18.scanner.BluetoothLeScannerCompat;
@@ -30,11 +28,11 @@ public class BTScanActivity extends Activity {
 
     ListView mScanResultView;
     ScanResultListAdapter mResultListAdapter;
+    private boolean scanning = false;
 
     AdapterView.OnItemClickListener wheelSelectListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            stopScan();
             String deviceAddress = mResultListAdapter.getItem(position).getDevice().getAddress();
             Log.d(TAG, "WHEEL SELECTED: " + deviceAddress);
             startSpeedometerActivity(deviceAddress);
@@ -91,41 +89,60 @@ public class BTScanActivity extends Activity {
                 mScanResultView.setOnItemClickListener(wheelSelectListener);
             }
         });
-
-        requestPermissions(new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, 1);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        Log.d(TAG, "onRequestPermissionsResult");
         if(requestCode==1) {
-            if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                startScan();
+            if(grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                finish();
             }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "onResume, already having permission. starting scan");
+            startScan();
+        } else {
+            Log.d(TAG, "onResume, requesting permissions");
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        Log.d(TAG, "onPause, stopping scan if running");
+        stopScan();
     }
 
     private void startScan() {
-        Log.d(TAG, "Starting scan");
+        if(!scanning) {
+            Log.d(TAG, "Starting scan");
 
-        BluetoothLeScannerCompat scanner = BluetoothLeScannerCompat.getScanner();
-        ScanSettings settings = new ScanSettings.Builder()
-                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                .setUseHardwareBatchingIfSupported(false)
-                .setReportDelay(1000)
-                .build();
+            BluetoothLeScannerCompat scanner = BluetoothLeScannerCompat.getScanner();
+            ScanSettings settings = new ScanSettings.Builder()
+                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                    .setUseHardwareBatchingIfSupported(false)
+                    .setReportDelay(1000)
+                    .build();
 
-        scanner.startScan(new ArrayList<ScanFilter>(), settings, scanCallback);
+            scanner.startScan(new ArrayList<ScanFilter>(), settings, scanCallback);
+            scanning = true;
+        }
     }
 
     private void stopScan() {
-        Log.d(TAG, "Stopping scan");
+        if(scanning) {
+            Log.d(TAG, "Stopping scan");
 
-        BluetoothLeScannerCompat scanner = BluetoothLeScannerCompat.getScanner();
-        scanner.stopScan(scanCallback);
+            BluetoothLeScannerCompat scanner = BluetoothLeScannerCompat.getScanner();
+            scanner.stopScan(scanCallback);
+            scanning = false;
+        }
     }
 }

@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
 import android.view.View;
@@ -37,6 +38,11 @@ public class SpeedometerActivity extends WearableActivity {
     private static final UUID KINGSONG_CHARACTERISTIC = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
     private static final UUID KINGSONG_DESCRIPTOR = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
+    private void startScanActivity() {
+        Intent intent = new Intent(this, BTScanActivity.class);
+        startActivity(intent);
+    }
+
     private BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
@@ -45,6 +51,13 @@ public class SpeedometerActivity extends WearableActivity {
                 gatt.discoverServices();
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.d(TAG, "Disconnected from GATT client");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        startScanActivity();
+                        finish();
+                    }
+                });
             }
         }
 
@@ -74,7 +87,6 @@ public class SpeedometerActivity extends WearableActivity {
             if(KINGSONG_CHARACTERISTIC.equals(characteristic.getUuid())) {
                 byte[] data = characteristic.getValue();
                 mKingsongData.decodeKingSong(data);
-                Log.d(TAG, "Kingsong data = " + mKingsongData.toString());
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -129,6 +141,12 @@ public class SpeedometerActivity extends WearableActivity {
     private TextView mClockView;
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mGatt.close();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.speedometer);
@@ -153,6 +171,20 @@ public class SpeedometerActivity extends WearableActivity {
         BluetoothAdapter bluetoothAdapter = mBluetoothManager.getAdapter();
         BluetoothDevice device = bluetoothAdapter.getRemoteDevice(deviceAddress);
         mGatt = device.connectGatt(this, false, mGattCallback);
+    }
+
+    public void playHorn(View view) {
+        byte[] data = new byte[20];
+        data[0] = (byte) -86;
+        data[1] = (byte) 85;
+        data[16] = (byte) -120;
+        data[17] = (byte) 20;
+        data[18] = (byte) 90;
+        data[19] = (byte) 90;
+        BluetoothGattCharacteristic c = mGatt.getService(KINGSONG_SERVICE).getCharacteristic(KINGSONG_CHARACTERISTIC);
+        c.setValue(data);
+        c.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
+        mGatt.writeCharacteristic(c);
     }
 
     public void requestNameData(View view) {
@@ -201,18 +233,28 @@ public class SpeedometerActivity extends WearableActivity {
         super.onExitAmbient();
     }
 
+    public void speedAlert(View view) {
+        Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        long[] pattern = {0, 10, 200, 10};
+        vibrator.vibrate(pattern, -1);
+    }
+
     private void updateDisplay() {
+        if(mKingsongData.getSpeed()>=34) {
+            speedAlert(null);
+        }
+
         if (isAmbient()) {
             mSpeedView.setText(String.format("%.1f", mKingsongData.getSpeed()));
-            mBatteryView.setText(String.format("%d", mKingsongData.getBattery()));
-            mTempView.setText(String.format("%.1f", mKingsongData.getTemperature()));
-            mCurrentView.setText(String.format("%.1f", mKingsongData.getCurrent()));
+            mBatteryView.setText(String.format("%d ", mKingsongData.getBattery()));
+            mTempView.setText(String.format("%.1f ", mKingsongData.getTemperature()));
+            mCurrentView.setText(String.format("%.1f ", mKingsongData.getCurrent()));
             mClockView.setText(android.text.format.DateFormat.format("HH:mm", new Date()));
         } else {
             mSpeedView.setText(String.format("%.1f", mKingsongData.getSpeed()));
-            mBatteryView.setText(String.format("%d", mKingsongData.getBattery()));
-            mTempView.setText(String.format("%.1f", mKingsongData.getTemperature()));
-            mCurrentView.setText(String.format("%.1f", mKingsongData.getCurrent()));
+            mBatteryView.setText(String.format("%d ", mKingsongData.getBattery()));
+            mTempView.setText(String.format("%.1f ", mKingsongData.getTemperature()));
+            mCurrentView.setText(String.format("%.1f ", mKingsongData.getCurrent()));
             mClockView.setText(android.text.format.DateFormat.format("HH:mm", new Date()));
         }
     }
