@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.mlt.kingsongwear.SpeedometerActivity"
+    tools:deviceIds="wear">
+
+    <TextView
+        android:id="@+id/speedcaption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="10px"
+        android:textSize="30px"
+        android:textAlignment="center"
+        android:text="km/h"
+        app:layout_box="all" />
+
+    <TextView
+        android:id="@+id/speed"
+        android:textColor="@android:color/white"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="60px"
+        android:textAlignment="center"
+        android:text="35.2"
+        app:layout_box="all" />
+
+    <TextView
+        android:id="@+id/voltagecaption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:textColor="@android:color/white"
+        android:textAlignment="center"
+        android:text="Battery V"
+        app:layout_box="all" />
+
+    <TextView
+        android:id="@+id/voltage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="60px"
+        android:textColor="@android:color/white"
+        android:textAlignment="center"
+        android:text="66.3"
+        app:layout_box="all" />
+</LinearLayout>

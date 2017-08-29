@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">KingSong Wear</string>
+    <string name="hello_world">Hello World!</string>
+    <string name="title_activity_btscan">BTScanActivity</string>
+    <string name="hello_round">Hello Round World!</string>
+    <string name="hello_square">Hello Square World!</string>
+</resources>
