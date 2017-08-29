@@ -44,18 +44,27 @@ public class SpeedometerActivity extends WearableActivity {
     }
 
     private BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
+        public boolean reconnected = false;
+
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 Log.d(TAG, "Connected to GATT client. Attempting to start service discovery");
-                gatt.discoverServices();
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                Log.d(TAG, "Disconnected from GATT client");
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        startScanActivity();
-                        finish();
+                        mSpeedView.setTextColor(getResources().getColor(R.color.white));
+                    }
+                });
+                gatt.discoverServices();
+            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                Log.d(TAG, "Disconnected from GATT client");
+
+                reconnected = true;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mSpeedView.setTextColor(getResources().getColor(R.color.red));
                     }
                 });
             }
@@ -117,7 +126,7 @@ public class SpeedometerActivity extends WearableActivity {
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             if(KINGSONG_DESCRIPTOR.equals(descriptor.getUuid())) {
                 Log.d(TAG, "Descriptor written");
-                requestNameData(null);
+                if(!reconnected) requestNameData(null);
             }
         }
 
@@ -170,7 +179,7 @@ public class SpeedometerActivity extends WearableActivity {
     private void connectWheel(String deviceAddress) {
         BluetoothAdapter bluetoothAdapter = mBluetoothManager.getAdapter();
         BluetoothDevice device = bluetoothAdapter.getRemoteDevice(deviceAddress);
-        mGatt = device.connectGatt(this, false, mGattCallback);
+        mGatt = device.connectGatt(this, true, mGattCallback);
     }
 
     public void playHorn(View view) {
