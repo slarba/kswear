@@ -119,4 +119,7 @@ public class KingsongData {
     public float getVoltage() {
         return (float)mVoltage/100;
     }
+    public int getBattery() { return mBattery; }
+    public float getTemperature() { return (float)mTemperature/100; }
+    public float getCurrent() { return (float)mCurrent/100; }
 }

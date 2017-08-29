@@ -37,11 +37,20 @@ public class BTScanActivity extends Activity {
             stopScan();
             String deviceAddress = mResultListAdapter.getItem(position).getDevice().getAddress();
             Log.d(TAG, "WHEEL SELECTED: " + deviceAddress);
-            Intent intent = new Intent(BTScanActivity.this, SpeedometerActivity.class);
-            intent.putExtra("deviceAddress", deviceAddress);
-            startActivity(intent);
+            startSpeedometerActivity(deviceAddress);
+            finish();
         }
     };
+
+    private void showToast(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
+
+    private void startSpeedometerActivity(String deviceAddress) {
+        Intent intent = new Intent(BTScanActivity.this, SpeedometerActivity.class);
+        intent.putExtra("deviceAddress", deviceAddress);
+        startActivity(intent);
+    }
 
     ScanCallback scanCallback = new ScanCallback() {
         @Override
@@ -60,7 +69,7 @@ public class BTScanActivity extends Activity {
         @Override
         public void onScanFailed(int errorCode) {
             Log.d(TAG, "onScanFailed: " + errorCode);
-            Toast.makeText(BTScanActivity.this, "Scan failed", Toast.LENGTH_SHORT).show();
+            showToast("Scan failed");
         }
     };
 

@@ -17,19 +17,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 import java.util.Date;
-import java.util.Locale;
 import java.util.UUID;
 
 public class SpeedometerActivity extends WearableActivity {
 
-    private static final SimpleDateFormat AMBIENT_DATE_FORMAT =
-            new SimpleDateFormat("HH:mm", Locale.US);
-
     private LinearLayout mContainerView;
     private TextView mSpeedView;
-    private TextView mVoltageView;
+    private TextView mBatteryView;
     private String mDeviceAddress;
     private BluetoothManager mBluetoothManager;
     private BluetoothGatt mGatt;
@@ -128,6 +124,9 @@ public class SpeedometerActivity extends WearableActivity {
             super.onMtuChanged(gatt, mtu, status);
         }
     };
+    private TextView mTempView;
+    private TextView mCurrentView;
+    private TextView mClockView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,8 +141,12 @@ public class SpeedometerActivity extends WearableActivity {
         connectWheel(mDeviceAddress);
 
         mContainerView = (LinearLayout) findViewById(R.id.container);
+
         mSpeedView = (TextView) findViewById(R.id.speed);
-        mVoltageView = (TextView) findViewById(R.id.voltage);
+        mBatteryView = (TextView) findViewById(R.id.battery);
+        mTempView = (TextView) findViewById(R.id.temperature);
+        mCurrentView = (TextView) findViewById(R.id.current);
+        mClockView = (TextView) findViewById(R.id.clock);
     }
 
     private void connectWheel(String deviceAddress) {
@@ -200,15 +203,17 @@ public class SpeedometerActivity extends WearableActivity {
 
     private void updateDisplay() {
         if (isAmbient()) {
-            mContainerView.setBackgroundColor(getResources().getColor(android.R.color.black));
-            mSpeedView.setTextColor(getResources().getColor(android.R.color.white));
             mSpeedView.setText(String.format("%.1f", mKingsongData.getSpeed()));
-            mVoltageView.setText(String.format("%.1f", mKingsongData.getVoltage()));
+            mBatteryView.setText(String.format("%d", mKingsongData.getBattery()));
+            mTempView.setText(String.format("%.1f", mKingsongData.getTemperature()));
+            mCurrentView.setText(String.format("%.1f", mKingsongData.getCurrent()));
+            mClockView.setText(android.text.format.DateFormat.format("HH:mm", new Date()));
         } else {
-            mContainerView.setBackgroundColor(getResources().getColor(android.R.color.black));
-            mSpeedView.setTextColor(getResources().getColor(android.R.color.white));
             mSpeedView.setText(String.format("%.1f", mKingsongData.getSpeed()));
-            mVoltageView.setText(String.format("%.1f", mKingsongData.getVoltage()));
+            mBatteryView.setText(String.format("%d", mKingsongData.getBattery()));
+            mTempView.setText(String.format("%.1f", mKingsongData.getTemperature()));
+            mCurrentView.setText(String.format("%.1f", mKingsongData.getCurrent()));
+            mClockView.setText(android.text.format.DateFormat.format("HH:mm", new Date()));
         }
     }
 }
