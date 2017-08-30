@@ -54,11 +54,11 @@ public class KingsongData {
                 mVoltage = byteArrayInt2(data[2], data[3]);
                 mSpeed = byteArrayInt2(data[4], data[5]);
                 mTotalDistance = byteArrayInt4(data[6], data[7], data[8], data[9]);
-                mCurrent = byteArrayInt2(data[10], data[11]);
+                mCurrent = (short)byteArrayInt2(data[10], data[11]);
                 if (mCurrent > 7000) {
                     mCurrent = 7000;
-                } else if (mCurrent < 0) {
-                    mCurrent = 0;
+                } else if (mCurrent < -7000) {
+                    mCurrent = -7000;
                 }
                 mTemperature = byteArrayInt2(data[12], data[13]);
 

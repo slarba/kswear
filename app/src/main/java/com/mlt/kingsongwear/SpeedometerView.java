@@ -140,8 +140,12 @@ public class SpeedometerView extends View {
     }
 
     private void drawCurrent(Canvas canvas, float amps) {
-        canvas.drawText(String.format("%.1f", amps), 57f, 165f, paramPaint);
-        canvas.drawText("A", 120f, 165f, titlePaint);
+        if(amps<0) {
+            canvas.drawText("ReGen", 57f, 165f, paramPaint);
+        } else {
+            canvas.drawText(String.format("%.1f", amps), 57f, 165f, paramPaint);
+            canvas.drawText("A", 120f, 165f, titlePaint);
+        }
     }
 
     private void drawVoltage(Canvas canvas, float volts) {
