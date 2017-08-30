@@ -60,7 +60,11 @@ public class BTScanActivity extends Activity {
         public void onBatchScanResults(List<ScanResult> results) {
             Log.d(TAG, "onBatchScanResults: " + results.toString());
             mResultListAdapter.clear();
-            mResultListAdapter.addAll(results);
+            for(ScanResult s : results) {
+                String dn = s.getScanRecord().getDeviceName();
+                if(dn!=null && dn.startsWith("KS"))
+                    mResultListAdapter.add(s);
+            }
             mResultListAdapter.notifyDataSetInvalidated();
         }
 

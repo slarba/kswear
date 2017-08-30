@@ -24,13 +24,11 @@ import java.util.UUID;
 
 public class SpeedometerActivity extends WearableActivity {
 
-    private LinearLayout mContainerView;
-    private TextView mSpeedView;
-    private TextView mBatteryView;
     private String mDeviceAddress;
     private BluetoothManager mBluetoothManager;
     private BluetoothGatt mGatt;
     private KingsongData mKingsongData = new KingsongData();
+    private SpeedometerView mSpeedometerView;
 
     private static final String TAG = "SpeedometerActivity";
 
@@ -50,23 +48,11 @@ public class SpeedometerActivity extends WearableActivity {
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 Log.d(TAG, "Connected to GATT client. Attempting to start service discovery");
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mSpeedView.setTextColor(getResources().getColor(R.color.white));
-                    }
-                });
                 gatt.discoverServices();
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.d(TAG, "Disconnected from GATT client");
 
                 reconnected = true;
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mSpeedView.setTextColor(getResources().getColor(R.color.red));
-                    }
-                });
             }
         }
 
@@ -167,13 +153,7 @@ public class SpeedometerActivity extends WearableActivity {
         mDeviceAddress = intent.getStringExtra("deviceAddress");
         connectWheel(mDeviceAddress);
 
-        mContainerView = (LinearLayout) findViewById(R.id.container);
-
-        mSpeedView = (TextView) findViewById(R.id.speed);
-        mBatteryView = (TextView) findViewById(R.id.battery);
-        mTempView = (TextView) findViewById(R.id.temperature);
-        mCurrentView = (TextView) findViewById(R.id.current);
-        mClockView = (TextView) findViewById(R.id.clock);
+        mSpeedometerView = (SpeedometerView) findViewById(R.id.speedometer);
     }
 
     private void connectWheel(String deviceAddress) {
@@ -253,18 +233,23 @@ public class SpeedometerActivity extends WearableActivity {
             speedAlert(null);
         }
 
+        Date now = new Date();
+
         if (isAmbient()) {
-            mSpeedView.setText(String.format("%.1f", mKingsongData.getSpeed()));
-            mBatteryView.setText(String.format("%d ", mKingsongData.getBattery()));
-            mTempView.setText(String.format("%.1f ", mKingsongData.getTemperature()));
-            mCurrentView.setText(String.format("%.1f ", mKingsongData.getCurrent()));
-            mClockView.setText(android.text.format.DateFormat.format("HH:mm", new Date()));
+            mSpeedometerView.setVoltage(mKingsongData.getVoltage());
+            mSpeedometerView.setSpeed(mKingsongData.getSpeed());
+            mSpeedometerView.setCurrent(mKingsongData.getCurrent());
+            mSpeedometerView.setBatteryLevel(mKingsongData.getBattery());
+            mSpeedometerView.setTemp(mKingsongData.getTemperature());
+            mSpeedometerView.setClock(now);
         } else {
-            mSpeedView.setText(String.format("%.1f", mKingsongData.getSpeed()));
-            mBatteryView.setText(String.format("%d ", mKingsongData.getBattery()));
-            mTempView.setText(String.format("%.1f ", mKingsongData.getTemperature()));
-            mCurrentView.setText(String.format("%.1f ", mKingsongData.getCurrent()));
-            mClockView.setText(android.text.format.DateFormat.format("HH:mm", new Date()));
+            mSpeedometerView.setVoltage(mKingsongData.getVoltage());
+            mSpeedometerView.setSpeed(mKingsongData.getSpeed());
+            mSpeedometerView.setCurrent(mKingsongData.getCurrent());
+            mSpeedometerView.setBatteryLevel(mKingsongData.getBattery());
+            mSpeedometerView.setTemp(mKingsongData.getTemperature());
+            mSpeedometerView.setClock(now);
         }
+        mSpeedometerView.refresh();
     }
 }
